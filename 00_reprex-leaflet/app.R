@@ -8,7 +8,7 @@ ui <- shiny::bootstrapPage(
            shiny::tags$span("")
     ),
     shiny::column(3, class = "number-of-points",
-           shiny::selectInput("n", "N", 1:100),
+           shiny::selectInput("n", "Number of Points", 1:100, selected = 10),
                   shiny::tags$style(type = "text/css", ".number-of-points { margin-top: 10px; min-width: 200px; z-index: 1000 }")
     )
   ),
@@ -23,12 +23,25 @@ ui <- shiny::bootstrapPage(
 server <- function(input, output, session) {
   # data(quakes)
 
-  awesome_icons <- leaflet::awesomeIcons(
+  awesome_icons <- leaflet::makeAwesomeIcon(
     icon = 'circle',
     iconColor = "black",
     markerColor = "red",
-    library = "fa"
+    library = "fa",
+    fontFamily = "monospace",
+    text = "R"
   )
+
+  getColor <- function(quakes) {
+    sapply(quakes$mag, function(mag) {
+      if(mag <= 4) {
+        "green"
+      } else if(mag <= 5) {
+        "orange"
+      } else {
+        "blue"
+      } })
+  }
 
   # Reactive expression for the data subsetted to what the user selected
   filteredData <- reactive({
@@ -36,24 +49,32 @@ server <- function(input, output, session) {
   })
 
   shiny::observe({
-    message("Update points");
+    message("Update points")
+
+    icon_colors <- getColor(filteredData())
+
+    quake_icons <- leaflet::awesomeIcons(
+      icon = 'ios-close',
+      iconColor = 'black',
+      library = 'ion',
+      markerColor = icon_colors
+    )
 
     leaflet::leafletProxy("map", data = filteredData()) %>%
       leaflet::clearShapes() %>%
       leaflet::clearMarkers() %>%
-      leaflet::addMarkers(~long, ~lat, popup = ~as.character(mag), label = ~as.character(mag), icons <- awesome_icons) %>%
-      leaflet::fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat)) %>%
-      leaflet::addAwesomeMarkers(lng=174.768, lat=-36.852, popup="The birthplace of R", icons <- awesome_icons)
+      # leaflet::fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat)) %>%
+      leaflet::addAwesomeMarkers(~long, ~lat, icon = quake_icons, label = ~as.character(mag)) %>%
+      leaflet::addAwesomeMarkers(lng=174.768, lat=-36.852, icon = awesome_icons, label = ~as.character(mag), popup="The birthplace of R")
   })
 
   output$map <- leaflet::renderLeaflet({
     # Show user selected rows from the `quakes` dataset
     leaflet::leaflet(quakes) %>%
       leaflet::addTiles() %>%
-      leaflet::clearShapes() %>%
-      leaflet::clearMarkers() %>%
       leaflet::fitBounds(~min(long), ~min(lat), ~max(long), ~max(lat)) %>%
-      leaflet::addAwesomeMarkers(lng=174.768, lat=-36.852, popup="The birthplace of R", icons <- awesome_icons)
+      # Note: sometimes the order of params = args, ... actually matters, as in the case of this call to addAwesomeMarkers
+      leaflet::addAwesomeMarkers(lng=174.768, lat=-36.852, icon = awesome_icons, label = ~as.character(mag), popup="The birthplace of R")
   })
 }
 

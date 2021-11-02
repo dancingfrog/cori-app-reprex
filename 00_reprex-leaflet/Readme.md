@@ -1,1 +1,1 @@
-Simple performance test for plotting markers on a map.
+Simple (subjective) performance test for plotting markers on a map.

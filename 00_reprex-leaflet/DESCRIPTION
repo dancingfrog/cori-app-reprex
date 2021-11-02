@@ -1,7 +1,10 @@
-Title: Hello Shiny!
-Author: RStudio, Inc.
-AuthorUrl: http://www.rstudio.com/
+Title: Hello Shiny Maps!
+Author: John Hall
+AuthorUrl: https://www.ruralinnovation.us
 License: MIT
 DisplayMode: Showcase
-Tags: getting-started
+Tags:
+  getting-started,
+  leaflet
+  maps
 Type: Shiny
